@@ -3,8 +3,8 @@ package config
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	clog "log"
+	"os"
 
 	"github.com/unbxd/go-base/v2/log"
 

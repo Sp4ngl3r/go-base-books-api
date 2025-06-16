@@ -1,4 +1,4 @@
-package handler
+package books
 
 import (
 	"context"
@@ -9,22 +9,21 @@ import (
 	"strconv"
 
 	"github.com/Sp4ngl3r/go-base-books-api/config"
-	"github.com/Sp4ngl3r/go-base-books-api/model"
-	"github.com/Sp4ngl3r/go-base-books-api/service"
+
 	"github.com/unbxd/go-base/v2/log"
 	"github.com/unbxd/go-base/v2/transport/http"
 )
 
 type BookHandler struct {
-	bookService service.BookService
+	bookService BookService
 }
 
-func NewBookHandler(service service.BookService) *BookHandler {
+func NewBookHandler(service BookService) *BookHandler {
 	return &BookHandler{bookService: service}
 }
 
 func (h *BookHandler) DecodeBook(_ context.Context, r *net_http.Request) (interface{}, error) {
-	var b model.Book
+	var b Book
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 		return nil, err
 	}
@@ -43,7 +42,7 @@ func (h *BookHandler) DecodeID(_ context.Context, r *net_http.Request) (interfac
 }
 
 func (h *BookHandler) DecodeBookWithID(ctx context.Context, r *net_http.Request) (interface{}, error) {
-	var b model.Book
+	var b Book
 	if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
 		return nil, err
 	}
@@ -71,10 +70,16 @@ func (h *BookHandler) ErrorEncoder(ctx context.Context, err error, w net_http.Re
 }
 
 func (h *BookHandler) Create(_ context.Context, req interface{}) (interface{}, error) {
-	book := req.(model.Book)
+	book := req.(Book)
 	config.AppLogger.Info("creating book", log.String("title", book.Title), log.String("author", book.Author))
 
-	return h.bookService.CreateBook(book)
+	createdBook, err := h.bookService.CreateBook(book)
+	if err != nil {
+		config.AppLogger.Error("failed to create book", log.String("title", book.Title), log.String("author", book.Author), log.Error(err))
+		return nil, err
+	}
+
+	return createdBook, nil
 }
 
 func (h *BookHandler) GetAll(_ context.Context, _ interface{}) (interface{}, error) {
@@ -91,7 +96,7 @@ func (h *BookHandler) Get(_ context.Context, req interface{}) (interface{}, erro
 }
 
 func (h *BookHandler) Update(_ context.Context, req interface{}) (interface{}, error) {
-	book := req.(model.Book)
+	book := req.(Book)
 
 	updatedBook, err := h.bookService.UpdateBook(book)
 	if err != nil {

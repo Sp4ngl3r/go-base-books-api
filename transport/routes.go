@@ -1,11 +1,11 @@
 package transport
 
 import (
-	"github.com/Sp4ngl3r/go-base-books-api/handler"
+	"github.com/Sp4ngl3r/go-base-books-api/internal/books"
 	"github.com/unbxd/go-base/v2/transport/http"
 )
 
-func SetupRoutes(h *handler.BookHandler) (*http.Transport, error) {
+func SetupRoutes(h *books.BookHandler) (*http.Transport, error) {
 	tr, err := http.NewHTTPTransport(
 		"book-api",
 		http.WithCustomHostPort("0.0.0.0", "5555"),
